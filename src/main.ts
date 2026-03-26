@@ -1,63 +1,29 @@
-import { CELL_SIZE, PLAYER_SIZE } from './constants';
-import { drawMap } from './map/map';
-import './game/game';
-import './style.css'
-import { gameState } from './data/shared_object';
+import './style.css';
+import { GameLoop } from './core/gameLoop';
+import { InputManager } from './core/inputManager';
+import { Player } from './game/player';
+import { World } from './game/world';
+import { Renderer3D } from './rendering/renderer3d';
+import { Minimap } from './rendering/minimap/minimap';
 
-const { width, height } = gameState.world.boundaries;
+const container3d = document.getElementById('view3d') as HTMLDivElement;
+const minimapCanvas = document.getElementById('minimap') as HTMLCanvasElement;
 
-const pressedKeyMap = new Map<string, boolean>();
-document.addEventListener("keydown", (event) => {
-    const keyName = event.key;
-    pressedKeyMap.set(keyName, true);
-});
+const world = new World();
+const input = new InputManager(container3d);
+const player = new Player(world);
+const renderer3d = new Renderer3D(world, container3d);
+const minimap = new Minimap(world, minimapCanvas);
 
-document.addEventListener("keyup", (event) => {
-    const keyName = event.key;
-    pressedKeyMap.set(keyName, false);
-});
+const loop = new GameLoop(
+    (delta) => {
+        const snapshot = input.snapshot();
+        player.update(snapshot, delta);
+    },
+    () => {
+        renderer3d.render();
+        minimap.render();
+    },
+);
 
-let start: number;
-let velocity = 30;
-let x = 0;
-let y = 0;
-
-function gameLoop(timestamp: number) {
-    if (start === undefined) {
-        start = timestamp;
-    }
-    const delta = timestamp - start;
-    start = timestamp;
-
-    let vector_x = 0;
-    let vector_y = 0;
-    if (pressedKeyMap.get('a')) {
-        vector_x--;
-    }
-    if (pressedKeyMap.get('d')) {
-        vector_x++;
-    }
-    if (pressedKeyMap.get('w')) {
-        vector_y--;
-    }
-    if (pressedKeyMap.get('s')) {
-        vector_y++;
-    }
-
-    let dt = delta / 100;
-    let disp = vector_x && vector_y ? velocity * dt / Math.sqrt(2) : velocity * dt;
-    x += disp * vector_x;
-    y += disp * vector_y;
-
-    x = Math.max(0, Math.min(x, (width * CELL_SIZE) - PLAYER_SIZE));
-    y = Math.max(0, Math.min(y, (height * CELL_SIZE) - PLAYER_SIZE));
-
-    gameState.player.x = x;
-    gameState.player.y = y;
-
-    drawMap(x, y);
-
-    requestAnimationFrame(gameLoop);
-}
-
-requestAnimationFrame(gameLoop);
+loop.start();
