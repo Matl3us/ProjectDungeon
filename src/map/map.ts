@@ -1,4 +1,7 @@
-import { BORDER_WIDTH, CELL_PADDING, CELL_SIZE, GRID_HEIGHT, GRID_WIDTH, PLAYER_SIZE, REAL_CELL_SIZE } from "../constants";
+import { BORDER_WIDTH, CELL_PADDING, CELL_SIZE, PLAYER_SIZE, REAL_CELL_SIZE } from "../constants";
+import { gameState } from "../data/shared_object";
+
+const { width, height } = gameState.world.boundaries;
 
 const canvas = document.getElementById("canvas2d") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
@@ -6,7 +9,7 @@ const ctx = canvas.getContext("2d")!;
 export function drawMap(playerX: number, playerY: number) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawBorders(GRID_WIDTH, GRID_HEIGHT);
+    drawBorders(width, height);
     drawPlayer(playerX, playerY);
 }
 

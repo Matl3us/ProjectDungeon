@@ -1,7 +1,10 @@
-import { CELL_SIZE, GRID_HEIGHT, GRID_WIDTH, PLAYER_SIZE } from './constants';
+import { CELL_SIZE, PLAYER_SIZE } from './constants';
 import { drawMap } from './map/map';
 import './game/game';
 import './style.css'
+import { gameState } from './data/shared_object';
+
+const { width, height } = gameState.world.boundaries;
 
 const pressedKeyMap = new Map<string, boolean>();
 document.addEventListener("keydown", (event) => {
@@ -46,8 +49,11 @@ function gameLoop(timestamp: number) {
     x += disp * vector_x;
     y += disp * vector_y;
 
-    x = Math.max(0, Math.min(x, (GRID_WIDTH * CELL_SIZE) - PLAYER_SIZE));
-    y = Math.max(0, Math.min(y, (GRID_HEIGHT * CELL_SIZE) - PLAYER_SIZE));
+    x = Math.max(0, Math.min(x, (width * CELL_SIZE) - PLAYER_SIZE));
+    y = Math.max(0, Math.min(y, (height * CELL_SIZE) - PLAYER_SIZE));
+
+    gameState.player.x = x;
+    gameState.player.y = y;
 
     drawMap(x, y);
 
