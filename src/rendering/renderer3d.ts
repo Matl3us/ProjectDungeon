@@ -34,12 +34,13 @@ export class Renderer3D {
     }
 
     render(): void {
-        const { x, y, yaw, pitch } = getState().player;
+        const { x, y, z, yaw, pitch } = getState().player;
 
         const threeX = x - this.world.widthPx / 2;
         const threeZ = y - this.world.heightPx / 2;
+        const threeY = z;
 
-        this.camera.position.set(threeX, PLAYER_HEIGHT / 2, threeZ);
+        this.camera.position.set(threeX, threeY + PLAYER_HEIGHT / 2, threeZ);
 
         this.camera.rotation.order = 'YXZ';
         this.camera.rotation.y = -yaw;

@@ -3,6 +3,8 @@ export interface InputSnapshot {
     moveBack: boolean;
     moveLeft: boolean;
     moveRight: boolean;
+    jump: boolean;
+    crouch: boolean;
     mouseDeltaX: number;
     mouseDeltaY: number;
     isPointerLocked: boolean;
@@ -31,6 +33,8 @@ export class InputManager {
             moveBack: this.keys.get('s') ?? false,
             moveLeft: this.keys.get('a') ?? false,
             moveRight: this.keys.get('d') ?? false,
+            jump: this.keys.get(' ') ?? false,
+            crouch: this.keys.get("control") ?? false,
             mouseDeltaX: this.mouseDeltaX,
             mouseDeltaY: this.mouseDeltaY,
             isPointerLocked: this.isLocked(),

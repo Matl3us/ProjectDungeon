@@ -5,6 +5,10 @@ export interface WorldState {
 export interface PlayerState {
     x: number;
     y: number;
+    z: number;
+    horizontalV: number;
+    verticalV: number;
+    onGround: boolean;
     yaw: number;
     pitch: number;
 }
@@ -21,6 +25,10 @@ const state: GameState = {
     player: {
         x: 250,
         y: 150,
+        z: 0,
+        horizontalV: 0,
+        verticalV: 0,
+        onGround: true,
         yaw: 0,
         pitch: 0,
     },
@@ -30,12 +38,22 @@ export function getState(): Readonly<GameState> {
     return state;
 }
 
-export function setPlayerPosition(x: number, y: number): void {
+export function setPlayerPosition(x: number, y: number, z: number): void {
     state.player.x = x;
     state.player.y = y;
+    state.player.z = z;
 }
 
 export function setPlayerLook(yaw: number, pitch: number): void {
     state.player.yaw = yaw;
     state.player.pitch = pitch;
+}
+
+export function setPlayerVelocity(horizontalV: number, verticalV: number): void {
+    state.player.horizontalV = horizontalV;
+    state.player.verticalV = verticalV;
+}
+
+export function setPlayerOnGround(onGround: boolean): void {
+    state.player.onGround = onGround;
 }
