@@ -1,0 +1,17 @@
+* {
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+}
+
+.container {
+  display: flex;
+}
+
+#canvas2d {
+  align-self: flex-start;
+}
+
+canvas {
+  background-color: black;
+}
