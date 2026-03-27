@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { PLAYER_HEIGHT } from '../constants';
 import { getState } from '../core/gameState';
 import type { World } from '../game/world';
+import GUI from 'lil-gui';
 
 export class Renderer3D {
     private scene: THREE.Scene;
@@ -9,6 +10,7 @@ export class Renderer3D {
     private renderer: THREE.WebGLRenderer;
 
     private readonly world: World
+    private debugGroups = new Map<string, THREE.Object3D[]>();
 
     constructor(world: World, container: HTMLElement) {
         this.world = world;
@@ -46,10 +48,19 @@ export class Renderer3D {
         this.renderer.render(this.scene, this.camera);
     }
 
+    private addToScene(name: string, mesh: THREE.Object3D): void {
+        this.scene.add(mesh);
+        const group = this.debugGroups.get(name) ?? [];
+        group.push(mesh);
+        this.debugGroups.set(name, group);
+    }
+
     private buildScene(): void {
         this.buildWorldFloor();
         this.buildWorldWalls();
         this.buildCollisionBoxes();
+
+        this.buildDebugMenu();
     }
 
     private buildWorldFloor(): void {
@@ -57,7 +68,7 @@ export class Renderer3D {
         const floorMat = new THREE.MeshBasicMaterial({ color: 0x898c87 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
-        this.scene.add(floor);
+        this.addToScene("floor", floor);
 
         const plane = this.world.worldFloor;
         const planeMat = new THREE.MeshBasicMaterial({ color: 0x03fc07, wireframe: true })
@@ -66,7 +77,7 @@ export class Renderer3D {
 
         const pos = this.toThree(plane.cx, plane.cy, plane.cz);
         planeMesh.position.copy(pos);
-        this.scene.add(planeMesh);
+        this.addToScene("hitboxes", planeMesh);
     }
 
     private buildWorldWalls(): void {
@@ -79,7 +90,7 @@ export class Renderer3D {
             const colWallGeo = new THREE.BoxGeometry(wall.halfW * 2, wall.halfH * 2, wall.halfD * 2);
             const colWallMesh = new THREE.Mesh(colWallGeo, colWallMat);
             colWallMesh.position.copy(pos);
-            this.scene.add(colWallMesh);
+            this.addToScene("hitboxes", colWallMesh);
 
             const isXWall = wall.halfW === 5;
             const wallWidth = isXWall ? wall.halfD * 2 : wall.halfW * 2;
@@ -96,7 +107,7 @@ export class Renderer3D {
                 wallMesh.position.z += wall.cy < 0 ? wall.halfD : -wall.halfD;
             }
 
-            this.scene.add(wallMesh);
+            this.addToScene("walls", wallMesh);
         }
     }
 
@@ -108,7 +119,7 @@ export class Renderer3D {
 
             const pos = this.toThree(box.cx, box.cy, box.cz);
             boxMesh.position.copy(pos);
-            this.scene.add(boxMesh);
+            this.addToScene("hitboxes", boxMesh);
         }
     }
 
@@ -120,5 +131,19 @@ export class Renderer3D {
 
     private toThree(x: number, y: number, z: number): THREE.Vector3 {
         return new THREE.Vector3(x, z, y);
+    }
+
+    private buildDebugMenu(): void {
+        const gui = new GUI({ title: 'Debug menu' });
+        const visFolder = gui.addFolder('Visibility');
+
+        for (const [name, objects] of this.debugGroups) {
+            const state = { visible: true };
+            visFolder.add(state, 'visible')
+                .name(name)
+                .onChange((v: boolean) => {
+                    for (const obj of objects) obj.visible = v;
+                });
+        }
     }
 }
