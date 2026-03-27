@@ -33,11 +33,11 @@ export class Minimap {
     }
 
     private wx(worldX: number): number {
-        return worldX * this.scaleX;
+        return (worldX + this.world.widthPx / 2) * this.scaleX;
     }
 
     private wy(worldY: number): number {
-        return worldY * this.scaleY;
+        return (worldY + this.world.heightPx / 2) * this.scaleY;
     }
 
     private drawGrid(): void {
@@ -50,12 +50,12 @@ export class Minimap {
 
         ctx.beginPath();
         for (let col = 1; col < world.widthCells; col++) {
-            const x = this.wx(col * world.cellSize);
+            const x = this.wx(-world.widthPx / 2 + col * world.cellSize);
             ctx.moveTo(x, 0);
             ctx.lineTo(x, MINIMAP_HEIGHT);
         }
         for (let row = 1; row < world.heightCells; row++) {
-            const y = this.wy(row * world.cellSize);
+            const y = this.wy(-world.heightPx / 2 + row * world.cellSize);
             ctx.moveTo(0, y);
             ctx.lineTo(MINIMAP_WIDTH, y);
         }

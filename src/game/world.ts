@@ -10,7 +10,7 @@ export class World {
     readonly heightPx: number;
 
     readonly collisionBoxes: Array<SolidBox>;
-    readonly collisionPlane: SolidPlane;
+    readonly worldFloor: SolidPlane;
 
     constructor() {
         const { width, height } = getState().world.boundaries;
@@ -21,14 +21,14 @@ export class World {
         this.heightPx = height * CELL_SIZE;
 
         this.collisionBoxes = [
-            { cx: 225, cy: 85, cz: 35, halfW: 10, halfH: 10, halfD: 10 },
-            { cx: 80, cy: 65, cz: 25, halfW: 10, halfH: 10, halfD: 10 },
-            { cx: 100, cy: 165, cz: 10, halfW: 30, halfH: 10, halfD: 50 }
+            { cx: -25, cy: -65, cz: 35, halfW: 10, halfH: 10, halfD: 10 },
+            { cx: -170, cy: -85, cz: 25, halfW: 10, halfH: 10, halfD: 10 },
+            { cx: -150, cy: 15, cz: 10, halfW: 30, halfH: 10, halfD: 50 },
         ]
 
-        this.collisionPlane = {
-            cx: this.widthPx / 2,
-            cy: this.heightPx / 2,
+        this.worldFloor = {
+            cx: 0,
+            cy: 0,
             cz: -5,
             halfW: this.widthPx / 2,
             halfD: this.heightPx / 2,

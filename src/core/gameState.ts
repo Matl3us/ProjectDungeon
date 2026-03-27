@@ -22,8 +22,8 @@ const state: GameState = {
         boundaries: { width: 25, height: 15 },
     },
     player: {
-        x: 250,
-        y: 150,
+        x: 0,
+        y: 0,
         z: 0,
         horizontalV: 0,
         verticalV: 0,

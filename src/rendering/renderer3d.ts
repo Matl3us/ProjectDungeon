@@ -35,12 +35,9 @@ export class Renderer3D {
 
     render(): void {
         const { x, y, z, yaw, pitch } = getState().player;
+        const pos = this.toThree(x, y, z);
 
-        const threeX = x - this.world.widthPx / 2;
-        const threeZ = y - this.world.heightPx / 2;
-        const threeY = z;
-
-        this.camera.position.set(threeX, threeY + PLAYER_HEIGHT / 2, threeZ);
+        this.camera.position.set(pos.x, pos.y + PLAYER_HEIGHT / 2, pos.z);
 
         this.camera.rotation.order = 'YXZ';
         this.camera.rotation.y = -yaw;
@@ -50,21 +47,25 @@ export class Renderer3D {
     }
 
     private buildScene(): void {
+        this.buildWorldFloor();
+        this.buildCollisionBoxes();
+    }
+
+    private buildWorldFloor(): void {
         const floorGeo = new THREE.PlaneGeometry(this.world.widthPx, this.world.heightPx);
         const floorMat = new THREE.MeshBasicMaterial({ color: 0x898c87 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
         this.scene.add(floor);
 
-        this.buildCollisionBoxes();
-        this.buildCollisionPlanes();
+        const plane = this.world.worldFloor;
+        const planeMat = new THREE.MeshBasicMaterial({ color: 0x03fc07, wireframe: true })
+        const planeGeo = new THREE.BoxGeometry(plane.halfW * 2, plane.halfH * 2, plane.halfD * 2);
+        const planeMesh = new THREE.Mesh(planeGeo, planeMat);
 
-        const ambient = new THREE.AmbientLight(0xff0000, 0.4);
-        this.scene.add(ambient);
-
-        const point = new THREE.PointLight(0xffffff, 1.5, this.world.widthPx);
-        point.position.set(0, PLAYER_HEIGHT, 0);
-        this.scene.add(point);
+        const pos = this.toThree(plane.cx, plane.cy, plane.cz);
+        planeMesh.position.copy(pos);
+        this.scene.add(planeMesh);
     }
 
     private buildCollisionBoxes(): void {
@@ -73,33 +74,19 @@ export class Renderer3D {
             const boxGeo = new THREE.BoxGeometry(box.halfW * 2, box.halfH * 2, box.halfD * 2);
             const boxMesh = new THREE.Mesh(boxGeo, boxMat);
 
-            const threeX = box.cx - this.world.widthPx / 2;
-            const threeZ = box.cy - this.world.heightPx / 2;
-            const threeY = box.cz;
-
-            boxMesh.position.set(threeX, threeY, threeZ);
+            const pos = this.toThree(box.cx, box.cy, box.cz);
+            boxMesh.position.copy(pos);
             this.scene.add(boxMesh);
         }
-    }
-
-    private buildCollisionPlanes(): void {
-        const plane = this.world.collisionPlane;
-
-        const planeMat = new THREE.MeshBasicMaterial({ color: 0x03fc07, wireframe: true })
-        const planeGeo = new THREE.BoxGeometry(plane.halfW * 2, plane.halfH * 2, plane.halfD * 2);
-        const planeMesh = new THREE.Mesh(planeGeo, planeMat);
-
-        const threeX = plane.cx - this.world.widthPx / 2;
-        const threeZ = plane.cy - this.world.heightPx / 2;
-        const threeY = plane.cz;
-
-        planeMesh.position.set(threeX, threeY, threeZ);
-        this.scene.add(planeMesh);
     }
 
     private onResize(container: HTMLElement): void {
         this.camera.aspect = container.clientWidth / container.clientHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    private toThree(x: number, y: number, z: number): THREE.Vector3 {
+        return new THREE.Vector3(x, z, y);
     }
 }

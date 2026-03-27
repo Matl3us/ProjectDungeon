@@ -69,7 +69,7 @@ export class Player {
             cx: newX, cy: newY, cz: newZ + PLAYER_HEIGHT / 2,
             halfW: PLAYER_SIZE / 2, halfD: PLAYER_SIZE / 2, halfH: PLAYER_HEIGHT / 2
         };
-        for (const obj of [...this.world.collisionBoxes, this.world.collisionPlane]) {
+        for (const obj of [...this.world.collisionBoxes, this.world.worldFloor]) {
             const result = resolveAABB(playerAABB, obj);
             if (!result) continue;
 
