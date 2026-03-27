@@ -22,7 +22,7 @@ export class Minimap {
 
         this.world = world;
         this.scaleX = MINIMAP_WIDTH / this.world.widthPx;
-        this.scaleY = MINIMAP_HEIGHT / this.world.heightPx;
+        this.scaleY = MINIMAP_HEIGHT / this.world.depthPx;
     }
 
     render(): void {
@@ -37,7 +37,7 @@ export class Minimap {
     }
 
     private wy(worldY: number): number {
-        return (worldY + this.world.heightPx / 2) * this.scaleY;
+        return (worldY + this.world.depthPx / 2) * this.scaleY;
     }
 
     private drawGrid(): void {
@@ -54,8 +54,8 @@ export class Minimap {
             ctx.moveTo(x, 0);
             ctx.lineTo(x, MINIMAP_HEIGHT);
         }
-        for (let row = 1; row < world.heightCells; row++) {
-            const y = this.wy(-world.heightPx / 2 + row * world.cellSize);
+        for (let row = 1; row < world.depthCells; row++) {
+            const y = this.wy(-world.depthPx / 2 + row * world.cellSize);
             ctx.moveTo(0, y);
             ctx.lineTo(MINIMAP_WIDTH, y);
         }

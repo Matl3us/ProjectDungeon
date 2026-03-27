@@ -1,4 +1,4 @@
-const CELL_SIZE = 20;
+const CELL_SIZE = 50;
 const PLAYER_SIZE = 10;
 const PLAYER_HEIGHT = 50;
 const PLAYER_SPEED = 150;

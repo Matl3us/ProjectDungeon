@@ -1,5 +1,5 @@
 export interface WorldState {
-    boundaries: { width: number; height: number };
+    boundaries: { width: number; depth: number; height: number };
 }
 
 export interface PlayerState {
@@ -19,7 +19,7 @@ export interface GameState {
 
 const state: GameState = {
     world: {
-        boundaries: { width: 25, height: 15 },
+        boundaries: { width: 25, depth: 25, height: 10 },
     },
     player: {
         x: 0,

@@ -48,11 +48,12 @@ export class Renderer3D {
 
     private buildScene(): void {
         this.buildWorldFloor();
+        this.buildWorldWalls();
         this.buildCollisionBoxes();
     }
 
     private buildWorldFloor(): void {
-        const floorGeo = new THREE.PlaneGeometry(this.world.widthPx, this.world.heightPx);
+        const floorGeo = new THREE.PlaneGeometry(this.world.widthPx, this.world.depthPx);
         const floorMat = new THREE.MeshBasicMaterial({ color: 0x898c87 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
@@ -68,9 +69,40 @@ export class Renderer3D {
         this.scene.add(planeMesh);
     }
 
+    private buildWorldWalls(): void {
+        const colWallMat = new THREE.MeshBasicMaterial({ color: 0x03fc07, wireframe: true });
+        const wallMat = new THREE.MeshBasicMaterial({ color: 0x898c87, side: THREE.DoubleSide });
+
+        for (const wall of this.world.worldWalls) {
+            const pos = this.toThree(wall.cx, wall.cy, wall.cz);
+
+            const colWallGeo = new THREE.BoxGeometry(wall.halfW * 2, wall.halfH * 2, wall.halfD * 2);
+            const colWallMesh = new THREE.Mesh(colWallGeo, colWallMat);
+            colWallMesh.position.copy(pos);
+            this.scene.add(colWallMesh);
+
+            const isXWall = wall.halfW === 5;
+            const wallWidth = isXWall ? wall.halfD * 2 : wall.halfW * 2;
+            const wallHeight = wall.halfH * 2;
+
+            const wallGeo = new THREE.PlaneGeometry(wallWidth, wallHeight);
+            const wallMesh = new THREE.Mesh(wallGeo, wallMat);
+            wallMesh.position.copy(pos);
+
+            if (isXWall) {
+                wallMesh.position.x += wall.cx < 0 ? wall.halfW : -wall.halfW;
+                wallMesh.rotation.y = Math.PI / 2;
+            } else {
+                wallMesh.position.z += wall.cy < 0 ? wall.halfD : -wall.halfD;
+            }
+
+            this.scene.add(wallMesh);
+        }
+    }
+
     private buildCollisionBoxes(): void {
         const boxMat = new THREE.MeshBasicMaterial({ color: 0x03fc07, wireframe: true })
-        for (let box of this.world.collisionBoxes) {
+        for (const box of this.world.collisionBoxes) {
             const boxGeo = new THREE.BoxGeometry(box.halfW * 2, box.halfH * 2, box.halfD * 2);
             const boxMesh = new THREE.Mesh(boxGeo, boxMat);
 

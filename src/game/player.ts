@@ -69,7 +69,7 @@ export class Player {
             cx: newX, cy: newY, cz: newZ + PLAYER_HEIGHT / 2,
             halfW: PLAYER_SIZE / 2, halfD: PLAYER_SIZE / 2, halfH: PLAYER_HEIGHT / 2
         };
-        for (const obj of [...this.world.collisionBoxes, this.world.worldFloor]) {
+        for (const obj of [...this.world.collisionBoxes, this.world.worldFloor, ...this.world.worldWalls]) {
             const result = resolveAABB(playerAABB, obj);
             if (!result) continue;
 
@@ -93,7 +93,6 @@ export class Player {
 
         if (input.jump && isOnGround) {
             newVerticalV = JUMP_FORCE;
-            isOnGround = false;
         }
 
         setPlayerPosition(newX, newY, newZ);
