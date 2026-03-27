@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CELL_SIZE, PLAYER_HEIGHT } from '../constants';
+import { PLAYER_HEIGHT } from '../constants';
 import { getState } from '../core/gameState';
 import type { World } from '../game/world';
 
@@ -51,19 +51,13 @@ export class Renderer3D {
 
     private buildScene(): void {
         const floorGeo = new THREE.PlaneGeometry(this.world.widthPx, this.world.heightPx);
-        const floorMat = new THREE.MeshBasicMaterial({ color: 0x444444 });
+        const floorMat = new THREE.MeshBasicMaterial({ color: 0x898c87 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
         this.scene.add(floor);
 
-        const ceilGeo = new THREE.PlaneGeometry(this.world.widthPx, this.world.heightPx);
-        const ceilMat = new THREE.MeshBasicMaterial({ color: 0x222222 });
-        const ceil = new THREE.Mesh(ceilGeo, ceilMat);
-        ceil.rotation.x = Math.PI / 2;
-        ceil.position.y = PLAYER_HEIGHT * 2;
-        this.scene.add(ceil);
-
-        this.buildWalls();
+        this.buildCollisionBoxes();
+        this.buildCollisionPlanes();
 
         const ambient = new THREE.AmbientLight(0xff0000, 0.4);
         this.scene.add(ambient);
@@ -73,26 +67,34 @@ export class Renderer3D {
         this.scene.add(point);
     }
 
-    private buildWalls(): void {
-        const wallMat = new THREE.MeshLambertMaterial({ color: 0x886644 });
-        const wallH = PLAYER_HEIGHT * 2;
-        const W = this.world.widthPx;
-        const H = this.world.heightPx;
-        const T = CELL_SIZE;
+    private buildCollisionBoxes(): void {
+        const boxMat = new THREE.MeshBasicMaterial({ color: 0x03fc07, wireframe: true })
+        for (let box of this.world.collisionBoxes) {
+            const boxGeo = new THREE.BoxGeometry(box.halfW * 2, box.halfH * 2, box.halfD * 2);
+            const boxMesh = new THREE.Mesh(boxGeo, boxMat);
 
-        const walls: Array<{ w: number; h: number; d: number; x: number; y: number; z: number }> = [
-            { w: W + T * 2, h: wallH, d: T, x: 0, y: wallH / 2, z: -(H / 2 + T / 2) },
-            { w: W + T * 2, h: wallH, d: T, x: 0, y: wallH / 2, z: (H / 2 + T / 2) },
-            { w: T, h: wallH, d: H, x: -(W / 2 + T / 2), y: wallH / 2, z: 0 },
-            { w: T, h: wallH, d: H, x: (W / 2 + T / 2), y: wallH / 2, z: 0 },
-        ];
+            const threeX = box.cx - this.world.widthPx / 2;
+            const threeZ = box.cy - this.world.heightPx / 2;
+            const threeY = box.cz;
 
-        for (const { w, h, d, x, y, z } of walls) {
-            const geo = new THREE.BoxGeometry(w, h, d);
-            const mesh = new THREE.Mesh(geo, wallMat);
-            mesh.position.set(x, y, z);
-            this.scene.add(mesh);
+            boxMesh.position.set(threeX, threeY, threeZ);
+            this.scene.add(boxMesh);
         }
+    }
+
+    private buildCollisionPlanes(): void {
+        const plane = this.world.collisionPlane;
+
+        const planeMat = new THREE.MeshBasicMaterial({ color: 0x03fc07, wireframe: true })
+        const planeGeo = new THREE.BoxGeometry(plane.halfW * 2, plane.halfH * 2, plane.halfD * 2);
+        const planeMesh = new THREE.Mesh(planeGeo, planeMat);
+
+        const threeX = plane.cx - this.world.widthPx / 2;
+        const threeZ = plane.cy - this.world.heightPx / 2;
+        const threeY = plane.cz;
+
+        planeMesh.position.set(threeX, threeY, threeZ);
+        this.scene.add(planeMesh);
     }
 
     private onResize(container: HTMLElement): void {

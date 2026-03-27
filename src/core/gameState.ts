@@ -8,7 +8,6 @@ export interface PlayerState {
     z: number;
     horizontalV: number;
     verticalV: number;
-    onGround: boolean;
     yaw: number;
     pitch: number;
 }
@@ -28,7 +27,6 @@ const state: GameState = {
         z: 0,
         horizontalV: 0,
         verticalV: 0,
-        onGround: true,
         yaw: 0,
         pitch: 0,
     },
@@ -52,8 +50,4 @@ export function setPlayerLook(yaw: number, pitch: number): void {
 export function setPlayerVelocity(horizontalV: number, verticalV: number): void {
     state.player.horizontalV = horizontalV;
     state.player.verticalV = verticalV;
-}
-
-export function setPlayerOnGround(onGround: boolean): void {
-    state.player.onGround = onGround;
 }

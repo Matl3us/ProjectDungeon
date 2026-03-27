@@ -1,4 +1,5 @@
 import { CELL_SIZE } from '../constants';
+import type { SolidBox, SolidPlane } from '../core/collision/collision';
 import { getState } from '../core/gameState';
 
 export class World {
@@ -8,6 +9,9 @@ export class World {
     readonly widthPx: number;
     readonly heightPx: number;
 
+    readonly collisionBoxes: Array<SolidBox>;
+    readonly collisionPlane: SolidPlane;
+
     constructor() {
         const { width, height } = getState().world.boundaries;
         this.widthCells = width;
@@ -15,12 +19,20 @@ export class World {
         this.cellSize = CELL_SIZE;
         this.widthPx = width * CELL_SIZE;
         this.heightPx = height * CELL_SIZE;
-    }
 
-    clamp(x: number, y: number, entitySize: number): { x: number; y: number } {
-        return {
-            x: Math.max(entitySize / 2, Math.min(x, this.widthPx - entitySize / 2)),
-            y: Math.max(entitySize / 2, Math.min(y, this.heightPx - entitySize / 2)),
-        };
+        this.collisionBoxes = [
+            { cx: 225, cy: 85, cz: 35, halfW: 10, halfH: 10, halfD: 10 },
+            { cx: 80, cy: 65, cz: 25, halfW: 10, halfH: 10, halfD: 10 },
+            { cx: 100, cy: 165, cz: 10, halfW: 30, halfH: 10, halfD: 50 }
+        ]
+
+        this.collisionPlane = {
+            cx: this.widthPx / 2,
+            cy: this.heightPx / 2,
+            cz: -5,
+            halfW: this.widthPx / 2,
+            halfD: this.heightPx / 2,
+            halfH: 5
+        }
     }
 }

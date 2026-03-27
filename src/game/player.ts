@@ -1,5 +1,6 @@
-import { GRAVITY, JUMP_FORCE, MAX_FALL_SPEED, PLAYER_SIZE, PLAYER_SPEED } from '../constants';
-import { getState, setPlayerLook, setPlayerOnGround, setPlayerPosition, setPlayerVelocity } from '../core/gameState';
+import { GRAVITY, JUMP_FORCE, MAX_FALL_SPEED, PLAYER_HEIGHT, PLAYER_SIZE, PLAYER_SPEED } from '../constants';
+import { resolveAABB } from '../core/collision/collision';
+import { getState, setPlayerLook, setPlayerPosition, setPlayerVelocity } from '../core/gameState';
 import type { InputSnapshot } from '../core/inputManager';
 import type { World } from './world';
 
@@ -33,9 +34,7 @@ export class Player {
     }
 
     private updatePosition(input: InputSnapshot, deltaSeconds: number): void {
-        const { x, y, z, horizontalV, verticalV, onGround, yaw } = getState().player;
-
-        console.log(horizontalV, verticalV);
+        const { x, y, z, verticalV, yaw } = getState().player;
 
         const fwdX = Math.sin(yaw);
         const fwdY = -Math.cos(yaw);
@@ -44,28 +43,16 @@ export class Player {
         let dy = 0;
 
         let newVerticalV = verticalV;
-        let isOnGround = onGround;
+        let isOnGround = false;
 
         if (input.moveForward) { dx += fwdX; dy += fwdY; }
         if (input.moveBack) { dx -= fwdX; dy -= fwdY; }
         if (input.moveLeft) { dx += fwdY; dy -= fwdX; }
         if (input.moveRight) { dx -= fwdY; dy += fwdX; }
 
-        if (input.jump && isOnGround) {
-            newVerticalV = JUMP_FORCE;
-            isOnGround = false;
-        }
-
         if (!isOnGround) {
             newVerticalV -= GRAVITY * deltaSeconds;
             newVerticalV = Math.max(newVerticalV, -MAX_FALL_SPEED);
-        }
-
-        let newZ = z + newVerticalV * deltaSeconds;
-        if (newZ <= 0) {
-            newZ = 0;
-            newVerticalV = 0;
-            isOnGround = true;
         }
 
         const len = Math.sqrt(dx * dx + dy * dy);
@@ -74,9 +61,42 @@ export class Player {
             dy = (dy / len) * PLAYER_SPEED * deltaSeconds;
         }
 
-        const clamped = this.world.clamp(x + dx, y + dy, PLAYER_SIZE);
-        setPlayerPosition(clamped.x, clamped.y, newZ);
+        let newX = x + dx;
+        let newY = y + dy;
+        let newZ = z + newVerticalV * deltaSeconds;
+
+        const playerAABB = {
+            cx: newX, cy: newY, cz: newZ + PLAYER_HEIGHT / 2,
+            halfW: PLAYER_SIZE / 2, halfD: PLAYER_SIZE / 2, halfH: PLAYER_HEIGHT / 2
+        };
+        for (const obj of [...this.world.collisionBoxes, this.world.collisionPlane]) {
+            const result = resolveAABB(playerAABB, obj);
+            if (!result) continue;
+
+            switch (result.axis) {
+                case 'x':
+                    newX += -result.sign * result.depth;
+                    break;
+                case 'y':
+                    newY += -result.sign * result.depth;
+                    break;
+                case 'z':
+                    newZ += -result.sign * result.depth;
+                    newVerticalV = 0;
+                    if (result.sign < 0) isOnGround = true;
+            }
+
+            playerAABB.cx = newX;
+            playerAABB.cy = newY;
+            playerAABB.cz = newZ + PLAYER_HEIGHT / 2;
+        }
+
+        if (input.jump && isOnGround) {
+            newVerticalV = JUMP_FORCE;
+            isOnGround = false;
+        }
+
+        setPlayerPosition(newX, newY, newZ);
         setPlayerVelocity(PLAYER_SPEED, newVerticalV);
-        setPlayerOnGround(isOnGround);
     }
 }
